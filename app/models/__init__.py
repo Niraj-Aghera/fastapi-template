@@ -7,7 +7,6 @@ from pathlib import Path
 
 from app.models.base_model import Base, BigIntMixin, TimestampMixin, UUIDMixin
 
-
 def _discover_model_module_paths() -> list[str]:
     """Locate ORM model modules under ``app.models`` and return import paths."""
     package_path = Path(__file__).parent
@@ -21,14 +20,12 @@ def _discover_model_module_paths() -> list[str]:
         discovered.append(module_name)
     return discovered
 
-
 def load_all_models(modules: Iterable[str] | None = None) -> None:
     """Import model modules (explicit list or auto-discovered under ``app.models``)."""
     module_paths = list(modules) if modules is not None else _discover_model_module_paths()
 
     for module_path in module_paths:
         importlib.import_module(module_path)
-
 
 # Define core exports first
 __all__ = [

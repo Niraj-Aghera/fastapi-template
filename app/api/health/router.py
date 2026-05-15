@@ -1,20 +1,17 @@
 """Health check router for the application."""
 
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, status
 from fastapi.responses import JSONResponse
 from sqlalchemy import text
-from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.dependencies import get_db
+from app.dependencies import DBSession
 from app.schema.api_response import create_response
 from app.schema.health import HealthCheckFailResponse, HealthCheckResponse
 from libs.logger import get_logger
 
-
 router = APIRouter(tags=["health"])
 
 logger = get_logger(__name__)
-
 
 @router.get(
     "/",
@@ -37,13 +34,12 @@ async def health_check() -> JSONResponse:
             errors=[{"code": "SERVICE_UNAVAILABLE", "message": "Service is unhealthy"}],
         )
 
-
 @router.get(
     "/db",
     summary="Database health check",
     description="Returns the health status of the database connection",
 )
-async def db_health_check(db: AsyncSession = Depends(get_db)) -> JSONResponse:
+async def db_health_check(db: DBSession) -> JSONResponse:
     try:
         result = await db.execute(text("SELECT 1"))
         if result.scalar_one() == 1:

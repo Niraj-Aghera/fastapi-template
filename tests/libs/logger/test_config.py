@@ -18,13 +18,11 @@ from libs.logger.constants import (
     ENV_LOG_PATH,
 )
 
-
 # Mock AppEnv for testing
 class MockAppEnv:
     LOCAL = "local"
     DEV = "dev"
     PROD = "prod"
-
 
 class TestLogConfig:
     """Test the LogConfig class methods."""
@@ -84,7 +82,6 @@ class TestLogConfig:
         assert "rotation" in config
         assert "retention" in config
         assert "compression" in config
-
 
 class TestLogConfigEnvironment:
     """Test LogConfig environment variable handling."""

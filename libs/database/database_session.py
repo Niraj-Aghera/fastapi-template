@@ -5,7 +5,6 @@ from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_sessionmaker
 # Type alias for database session
 DbSession = AsyncSession
 
-
 class DatabaseSession:
     """Database session manager."""
 

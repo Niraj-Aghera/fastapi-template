@@ -25,34 +25,34 @@ help:
 	@echo "  clean-cache     - Clean up Python cache files"
 	@echo "  logs-files      - View local log files"
 
-	@echo "\nDocker Commands:"
-	@echo "  build           - Build the Docker container"
-	@echo "  build-no-cache  - Build the Docker container without cache"
-	@echo "  up              - Up the Docker container"
-	@echo "  up-d            - Up the docker container in detached mode"
-	@echo "  up-d-build      - Up the docker container in detached mode and build the container"
-	@echo "  down            - Down the Docker container"
-	@echo "  restart         - Restart the Docker container"
-	@echo "  stop            - Stop the Docker container"
-	@echo "  start           - Start the Docker container"
-	@echo "  clean           - Clean the Docker container"
-	@echo "  logs            - View the Docker container logs"
-	@echo "  logs-app        - View the Docker container app logs"
-	@echo "  logs-db         - View the Docker container db logs"
-	@echo "  clean-volumes   - Clean the Docker container volumes"
-	@echo "  clean-all       - Clean the Docker container all"
-	@echo "  status          - View the Docker container status"
+	@echo "\nDocker Commands (all services: db + redis + valkey + server + worker):"
+	@echo "  build           - Build Docker containers"
+	@echo "  build-no-cache  - Build Docker containers without cache"
+	@echo "  up              - Start all services (foreground)"
+	@echo "  up-d            - Start all services (detached)"
+	@echo "  up-d-build      - Start all services with build (detached)"
+	@echo "  down            - Stop and remove all containers"
+	@echo "  restart         - Restart all services (down + up-d)"
+	@echo "  stop            - Stop all containers (keep containers)"
+	@echo "  start           - Start stopped containers"
 
-	@echo "\nTesting Commands:"
-	@echo "  test            - Run all tests locally"
-	@echo "  test-unit       - Run unit tests only (no database required)"
-	@echo "  test-cov        - Run tests with coverage locally"
+	@echo "\nDocker Logs:"
+	@echo "  logs            - View all container logs"
+	@echo "  logs-app        - View server logs"
+	@echo "  logs-db         - View database logs"
+
+	@echo "\nDocker Cleanup & Status:"
+	@echo "  clean           - Stop containers and prune Docker system"
+	@echo "  clean-volumes   - Stop containers and prune volumes"
+	@echo "  clean-all       - Stop containers and prune everything"
+	@echo "  ps              - List running containers"
+	@echo "  status          - View container status"
+
+	@echo "\nTesting Commands (run inside container, APP_ENV defaults to local):"
+	@echo "  test            - Run all tests in container"
+	@echo "  test-app        - Run tests/app in container"
+	@echo "  test-libs       - Run tests/libs in container"
+	@echo "  test-cov        - Run all tests with coverage in container"
+	@echo "  test-summary    - Run all tests, AI-friendly short output"
 
 .DEFAULT_GOAL := help
-
-# Test commands
-.PHONY: test test-cov
-test:
-	uv run pytest tests/ -v --tb=short
-test-cov:
-	uv run pytest tests/ --cov=app --cov=libs --cov-report=html --tb=short

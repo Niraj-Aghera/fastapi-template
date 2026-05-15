@@ -1,19 +1,12 @@
-"""Enums for the application."""
+"""Base enum class for the application."""
 
 from enum import Enum
 from typing import Self, TypeVar
 
-
 T = TypeVar("T", bound="BaseEnum")
 
-
 class BaseEnum(str, Enum):
-    """Base enum class with common functionality for all application enums.
-
-    This class provides common methods that can be used by all enum types
-    in the application, reducing code duplication and ensuring consistent
-    behavior across different enum types.
-    """
+    """Base enum class with common functionality for all application enums."""
 
     @classmethod
     def list(cls) -> list[str]:
@@ -29,12 +22,6 @@ class BaseEnum(str, Enum):
     def from_value(cls, value: str) -> Self:
         """Get enum member from string value.
 
-        Args:
-            value: The string value to convert to enum
-
-        Returns:
-            The corresponding enum member
-
         Raises:
             ValueError: If the value is not valid for this enum
         """
@@ -44,5 +31,4 @@ class BaseEnum(str, Enum):
         raise ValueError(f"'{value}' is not a valid {cls.__name__} value")
 
     def __str__(self) -> str:
-        """String representation of the enum value."""
         return str(self.value)

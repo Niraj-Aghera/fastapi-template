@@ -1,6 +1,5 @@
 """Tests for logger constants and their values."""
 
-
 class TestLoggerConstants:
     """Test logger constants and their values."""
 

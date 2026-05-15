@@ -16,12 +16,10 @@ from gunicorn.app.base import BaseApplication
 from gunicorn.util import import_app
 from uvicorn.workers import UvicornWorker as BaseUvicornWorker
 
-
 try:
     import uvloop  # (Found nested import)
 except ImportError:
     uvloop = None  # type: ignore  # (variables overlap)
-
 
 class UvicornWorker(BaseUvicornWorker):
     """Configuration for uvicorn workers.
@@ -38,7 +36,6 @@ class UvicornWorker(BaseUvicornWorker):
         "factory": True,
         "proxy_headers": False,
     }
-
 
 class GunicornApplication(BaseApplication):  # type: ignore[misc]
     """Custom gunicorn application.

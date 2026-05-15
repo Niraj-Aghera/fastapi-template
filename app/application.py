@@ -5,14 +5,10 @@ from fastapi.responses import JSONResponse, Response
 
 from app.api.health.router import health_check
 from app.api.router import router as api_router
-from app.config.settings import Settings
+from app.config.settings import settings
 from app.lifespan import lifespan
-from app.middlewares.authentication import ApiKeyMiddleware
+from app.middlewares.api_key import ApiKeyMiddleware
 from app.utils.constants import API_PREFIX
-
-
-settings = Settings()
-
 
 def get_app() -> FastAPI:
     """Get and configure the FastAPI application."""

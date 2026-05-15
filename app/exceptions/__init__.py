@@ -2,5 +2,4 @@
 
 from app.exceptions.auth_exceptions import ApiForbiddenError
 
-
 __all__ = ["ApiForbiddenError"]

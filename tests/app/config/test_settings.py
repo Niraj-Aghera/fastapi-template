@@ -9,7 +9,6 @@ from pydantic import ValidationError
 from app.config.settings import Settings
 from tests.utils.constants import *
 
-
 class TestSettings:
     """Test suite for application settings."""
 

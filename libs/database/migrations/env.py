@@ -12,14 +12,12 @@ from app.config.settings import settings
 from app.models import load_all_models
 from app.models.base_model import Base
 
-
 config = context.config
 
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
 target_metadata = Base.metadata
-
 
 def do_run_migrations(connection: Connection) -> None:
     """Helper function to run the migrations."""
@@ -36,7 +34,6 @@ def do_run_migrations(connection: Connection) -> None:
     with context.begin_transaction():
         context.run_migrations()
 
-
 async def run_migrations() -> None:
     """Run database migrations."""
     connectable = create_async_engine(
@@ -48,7 +45,6 @@ async def run_migrations() -> None:
         await connection.run_sync(do_run_migrations)
 
     await connectable.dispose()
-
 
 # Execute migrations
 asyncio.run(run_migrations())

@@ -4,9 +4,8 @@ import multiprocessing
 
 import uvicorn
 
-from app.appenv import AppEnv
-from app.config.settings import Settings
-
+from app.utils.enums import AppEnv
+from app.config.settings import settings
 
 # Attempt to import GunicornApplication from infra server package
 try:
@@ -20,10 +19,6 @@ if "GunicornApp" not in globals():  # pragma: no cover
     GunicornApp = None  # type: ignore
 if "gunicorn_import_error" not in globals():  # pragma: no cover
     gunicorn_import_error = None  # type: ignore
-
-# Get settings
-settings = Settings()
-
 
 def main() -> None:
     """Run the application with the appropriate server based on the environment."""
@@ -64,7 +59,6 @@ def main() -> None:
             workers=workers,
             **kwargs,
         ).run()
-
 
 if __name__ == "__main__":
     main()

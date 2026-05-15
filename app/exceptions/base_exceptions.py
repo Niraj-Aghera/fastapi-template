@@ -2,7 +2,6 @@
 
 from typing import Any
 
-
 class BaseAppError(Exception):
     """Base exception class for all application exceptions."""
 

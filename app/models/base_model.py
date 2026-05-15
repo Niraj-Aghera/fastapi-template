@@ -11,12 +11,10 @@ from uuid import UUID, uuid4
 from sqlalchemy import BigInteger, func, text
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
-
 class Base(DeclarativeBase):
     """Base class for all SQLAlchemy ORM models."""
 
     pass
-
 
 class UUIDMixin:
     """Mixin to add a UUID primary key column."""
@@ -28,12 +26,10 @@ class UUIDMixin:
         server_default=text("gen_random_uuid()"),
     )
 
-
 class BigIntMixin:
     """Mixin to add a BigInt auto-incrementing primary key column."""
 
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True, index=True)
-
 
 class TimestampMixin:
     """Mixin to add created_at and updated_at timestamp columns."""

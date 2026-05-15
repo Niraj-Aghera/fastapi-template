@@ -34,7 +34,7 @@ from .constants import (
 
 
 if TYPE_CHECKING:
-    from app.appenv import AppEnv
+    from app.utils.enums import AppEnv
 else:
     # Runtime placeholder for vulture
     AppEnv = None

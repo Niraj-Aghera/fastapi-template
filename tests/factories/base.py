@@ -1,10 +1,8 @@
 from factory import Factory
 from faker import Faker
 
-
 # Shared faker instance
 fake = Faker()
-
 
 class BaseFactory(Factory):
     """Base factory with common config for all factories."""

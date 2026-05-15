@@ -9,7 +9,6 @@ from sqlalchemy.orm import Mapped, mapped_column
 
 from app.models.base_model import Base, BigIntMixin, TimestampMixin, UUIDMixin
 
-
 class TestUUIDMixin:
     """Test suite for UUIDMixin."""
 
@@ -42,7 +41,6 @@ class TestUUIDMixin:
         assert isinstance(test_uuid, UUID)
         assert len(str(test_uuid)) == 36  # Standard UUID string length
 
-
 class TestBigIntMixin:
     """Test suite for BigIntMixin."""
 
@@ -72,7 +70,6 @@ class TestBigIntMixin:
         test_values = [1, 42, 9223372036854775807]  # Max 64-bit int
         for value in test_values:
             assert isinstance(value, int)
-
 
 class TestTimestampMixin:
     """Test suite for TimestampMixin."""
@@ -108,7 +105,6 @@ class TestTimestampMixin:
 
         # Test that datetime objects have timezone info
         assert utc_now.tzinfo is not None
-
 
 class TestBaseModel:
     """Test suite for Base model."""

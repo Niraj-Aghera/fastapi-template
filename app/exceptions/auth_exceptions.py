@@ -6,7 +6,6 @@ from starlette.status import HTTP_403_FORBIDDEN
 
 from app.exceptions.base_exceptions import BaseAppError
 
-
 class ApiForbiddenError(BaseAppError):
     """Exception raised for API key authentication errors."""
 

@@ -1,6 +1,9 @@
 # Setup and Operations Makefile
 # This file contains setup, run, and utility related commands
 
+# Default ngrok port
+NGROK_PORT ?= 5000
+
 .PHONY: setup python run run-dev run-prod clean-cache logs-files
 
 # Setup environment

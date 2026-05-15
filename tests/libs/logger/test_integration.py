@@ -2,7 +2,6 @@
 
 from unittest.mock import patch
 
-
 class TestLoggerIntegration:
     """Test the complete logger integration."""
 
@@ -120,7 +119,6 @@ class TestLoggerIntegration:
         assert isinstance(default_config["default_level"], str)
         assert isinstance(default_config["console_format"], str)
         assert isinstance(default_config["file_format"], str)
-
 
 class TestLoggerBackwardCompatibility:
     """Test backward compatibility with previous logger versions."""

@@ -15,9 +15,7 @@ from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 from app.config.settings import settings
 from libs.logger import get_logger
 
-
 logger = get_logger("lifespan")
-
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator[None]:

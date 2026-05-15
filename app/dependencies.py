@@ -1,10 +1,10 @@
 """Application dependencies for dependency injection."""
 
 from collections.abc import AsyncGenerator
+from typing import Annotated
 
-from fastapi import Request
+from fastapi import Depends, Request
 from sqlalchemy.ext.asyncio import AsyncSession
-
 
 async def get_db(request: Request) -> AsyncGenerator[AsyncSession, None]:
     """
@@ -16,3 +16,5 @@ async def get_db(request: Request) -> AsyncGenerator[AsyncSession, None]:
     session_factory = request.app.state.db_session_factory
     async with session_factory() as session:
         yield session
+
+DBSession = Annotated[AsyncSession, Depends(get_db)]

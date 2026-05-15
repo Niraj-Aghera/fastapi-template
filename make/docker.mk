@@ -2,6 +2,7 @@
 # Contains Docker-related variables and targets
 
 # Variables
+APP_ENV ?= local
 DEVOPS_BASE_PATH = infra/devops
 DOCKER_COMPOSE = docker compose -f $(DEVOPS_BASE_PATH)/docker-compose.yml --env-file .env
 ENV_FILE = .env
@@ -10,7 +11,6 @@ CONTAINER_NAME = fastapi-template-server-$(APP_ENV)
 DB_CONTAINER = fastapi-template-postgres-$(APP_ENV)
 POSTGRES_DATABASE_USERNAME = $(shell grep POSTGRES_DATABASE_USERNAME $(ENV_FILE) 2>/dev/null | cut -d '=' -f2)
 POSTGRES_DATABASE_NAME = $(shell grep POSTGRES_DATABASE_NAME $(ENV_FILE) 2>/dev/null | cut -d '=' -f2)
-VENV_BIN = .venv/bin
 
 # Build commands
 .PHONY: build build-no-cache
@@ -20,7 +20,7 @@ build:
 build-no-cache:
 	$(DOCKER_COMPOSE) build --no-cache
 
-# Docker commands
+# Docker commands (db + server)
 .PHONY: up up-d up-d-build down restart stop start
 up:
 	$(DOCKER_COMPOSE) up
@@ -67,9 +67,16 @@ clean-all: down
 # Status commands
 .PHONY: ps status
 ps:
-	$(DOCKER_COMPOSE) ps# Database Migration Commands
+	$(DOCKER_COMPOSE) ps
 
-# Database Migration commands
+status:
+	@echo "Container Status:"
+	@docker ps --filter "name=$(CONTAINER_NAME)" --format "$(CONTAINER_NAME): {{.Status}}"
+	@docker ps --filter "name=$(DB_CONTAINER)" --format "$(DB_CONTAINER): {{.Status}}"
+
+# Database Migration Commands
+.PHONY: db-shell db-revision db-upgrade db-downgrade db-history db-current
+
 db-shell:
 	$(DOCKER_COMPOSE) exec postgres psql -U $(POSTGRES_DATABASE_USERNAME) -d $(POSTGRES_DATABASE_NAME)
 
@@ -78,30 +85,35 @@ db-revision:
 		echo "Error: Please provide a migration message using 'message=your_message'"; \
 		exit 1; \
 	fi
-	$(VENV_BIN)/alembic -c libs/database/alembic.ini revision --autogenerate -m "$(message)"
+	$(DOCKER_COMPOSE) exec $(SERVICE_NAME) python -m alembic -c libs/database/alembic.ini revision --autogenerate -m "$(message)"
 
 db-upgrade:
-	$(VENV_BIN)/alembic -c libs/database/alembic.ini upgrade head
+	$(DOCKER_COMPOSE) exec $(SERVICE_NAME) python -m alembic -c libs/database/alembic.ini upgrade head
 
 db-downgrade:
-	$(VENV_BIN)/alembic -c libs/database/alembic.ini downgrade -1
+	$(DOCKER_COMPOSE) exec $(SERVICE_NAME) python -m alembic -c libs/database/alembic.ini downgrade -1
 
 db-history:
-	$(VENV_BIN)/alembic -c libs/database/alembic.ini history
+	$(DOCKER_COMPOSE) exec $(SERVICE_NAME) python -m alembic -c libs/database/alembic.ini history
 
 db-current:
-	$(VENV_BIN)/alembic -c libs/database/alembic.ini current
+	$(DOCKER_COMPOSE) exec $(SERVICE_NAME) python -m alembic -c libs/database/alembic.ini current
 
+# Test Commands (run inside the container)
+.PHONY: test test-app test-libs test-cov test-summary
 
-status:
-	@echo "Container Status:"
-	@docker ps --filter "name=$(CONTAINER_NAME)" --format "$(CONTAINER_NAME): {{.Status}}"
-	@docker ps --filter "name=$(DB_CONTAINER)" --format "$(DB_CONTAINER): {{.Status}}"
+test:
+	docker exec $(CONTAINER_NAME) python -m pytest tests/ -v
 
-# Test Environment Commands
-.PHONY: test-unit
+test-app:
+	docker exec $(CONTAINER_NAME) python -m pytest tests/app -v
 
-# Fast testing options
-test-unit:
-	@echo "Running unit tests (no database required)..."
-	uv run pytest tests/libs/logger/ tests/app/config/ tests/factories/ tests/helpers/ -v --tb=short
+test-libs:
+	docker exec $(CONTAINER_NAME) python -m pytest tests/libs -v
+
+test-cov:
+	docker exec $(CONTAINER_NAME) python -m pytest tests/ --cov=app --cov=libs --cov-report=html --tb=short
+
+# summary: failed test names + short tracebacks + counts, no noise
+test-summary:
+	docker exec $(CONTAINER_NAME) python -m pytest tests/ --tb=short -q --no-header 2>&1

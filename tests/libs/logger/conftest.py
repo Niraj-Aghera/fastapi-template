@@ -5,7 +5,6 @@
 
 import pytest
 
-
 # Disable the problematic test_settings fixture from parent conftest.py
 @pytest.fixture(scope="session", autouse=True)
 def test_settings():
