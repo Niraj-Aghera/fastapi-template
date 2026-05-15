@@ -1,0 +1,94 @@
+---
+description: Security guidelines and best practices for the application
+globs: ["**/*.py"]
+alwaysApply: true
+---
+
+# Security Best Practices
+
+## Context
+- Critical security guidelines for all code
+- Prevents common vulnerabilities
+- Ensures data protection and secure coding practices
+
+## Requirements
+- Never hardcode sensitive values (API keys, passwords, secrets)
+- Store all sensitive configuration in environment variables
+- Always validate and sanitize user inputs using Pydantic
+- Use parameterized queries (SQLAlchemy handles this automatically)
+- Implement proper authentication using API keys or other mechanisms
+- Use constant-time comparison for sensitive string comparisons
+- Never expose internal error details or stack traces to clients
+- Implement rate limiting for public endpoints
+- Use HTTPS in production environments
+- Sanitize logs to prevent sensitive data exposure
+
+## Examples
+<example>
+# Good: Secure practices
+import secrets
+from pydantic import BaseModel, Field, validator
+from app.config.settings import settings
+
+# Secure API key validation
+def validate_api_key(provided_key: str) -> bool:
+    """Use constant-time comparison to prevent timing attacks."""
+    return secrets.compare_digest(provided_key, settings.api_key)
+
+# Input validation with Pydantic
+class UserCreateRequest(BaseModel):
+    email: str = Field(..., regex=r'^[\w\.-]+@[\w\.-]+\.\w+$')
+    password: str = Field(..., min_length=8, max_length=128)
+    
+    @validator('password')
+    def validate_password_strength(cls, v):
+        if not any(c.isupper() for c in v):
+            raise ValueError('Password must contain uppercase letter')
+        if not any(c.isdigit() for c in v):
+            raise ValueError('Password must contain digit')
+        return v
+
+# Secure error handling
+try:
+    result = await process_payment(payment_data)
+except PaymentError as e:
+    logger.error(f"Payment failed for user {user_id}: {e.error_code}")
+    return create_response(
+        status_code=400,
+        message="Payment processing failed",
+        errors=[{"code": e.error_code, "message": "Payment could not be processed"}]
+    )
+
+# Environment-based configuration
+class Settings(BaseSettings):
+    database_password: str = Field(..., alias="DATABASE_PASSWORD")
+    api_key: str = Field(..., alias="API_KEY")
+    jwt_secret: str = Field(..., alias="JWT_SECRET")
+    
+    class Config:
+        env_file = ".env"
+</example>
+
+<example type="invalid">
+# Invalid: Security vulnerabilities
+# Hardcoded secrets
+API_KEY = "sk-1234567890abcdef"  # Wrong: Never hardcode secrets
+db_password = "admin123"  # Wrong: Hardcoded password
+
+# No input validation
+@router.post("/users")
+async def create_user(user_data: dict):  # Wrong: No validation
+    query = f"INSERT INTO users VALUES ('{user_data['email']}')"  # Wrong: SQL injection risk
+    
+# Exposing sensitive information
+except Exception as e:
+    return {
+        "error": str(e),  # Wrong: Exposing internal error
+        "stack_trace": traceback.format_exc(),  # Wrong: Never expose stack traces
+        "database_url": settings.database_url  # Wrong: Exposing sensitive config
+    }
+
+# Insecure comparison
+if provided_api_key == settings.api_key:  # Wrong: Timing attack vulnerability
+    return True
+</example>

@@ -1,0 +1,50 @@
+[importlinter]
+root_package = app
+include_submodules = true
+allow_indirect_imports = true
+
+[importlinter:contract:layers]
+name = Enforce Layered Architecture
+type = layers
+layers =
+    app.api
+    app.services
+    app.repositories
+    app.models
+
+
+[importlinter:contract:api-services]
+name = API can only import services
+type = forbidden
+source_modules = app.api
+allow_indirect_imports = true
+forbidden_modules =
+    app.repositories
+    app.models
+
+[importlinter:contract:services-repositories]
+name = Services can import repositories only
+type = forbidden
+source_modules = app.services
+allow_indirect_imports = true
+forbidden_modules =
+    app.api
+
+[importlinter:contract:repositories-models]
+name = Repositories can only import models
+type = forbidden
+source_modules = app.repositories
+allow_indirect_imports = true
+forbidden_modules =
+    app.api
+    app.services
+
+[importlinter:contract:models-leaf]
+name = Models cant import anything
+type = forbidden
+source_modules = app.models
+allow_indirect_imports = true
+forbidden_modules =
+    app.api
+    app.services
+    app.repositories

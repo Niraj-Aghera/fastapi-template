@@ -1,0 +1,102 @@
+---
+description: Testing conventions and best practices for pytest
+globs: ["tests/**/*.py", "app/**/*_test.py", "app/**/test_*.py"]
+alwaysApply: false
+---
+
+# Testing Standards
+
+## Context
+- Defines testing patterns using pytest and pytest-asyncio
+- Ensures comprehensive test coverage
+- Applies to all test files
+
+## Requirements
+- Use pytest as the testing framework
+- Write async tests for async code using pytest-asyncio
+- Use factory-boy for test data generation
+- Mock external dependencies and services
+- Organize tests mirroring the app structure
+- Aim for >80% test coverage
+- Use descriptive test names that explain what is being tested
+- Group related tests in classes when appropriate
+- Use fixtures for common test setup
+
+## Examples
+<example>
+# Good: Comprehensive async test with fixtures and mocks
+import pytest
+from httpx import AsyncClient
+from unittest.mock import AsyncMock
+from app.models.user import User
+from tests.factories.user_factory import UserFactory
+
+@pytest.fixture
+async def mock_user_service():
+    service = AsyncMock()
+    service.get_user.return_value = UserFactory.build()
+    return service
+
+@pytest.mark.asyncio
+class TestUserEndpoints:
+    async def test_create_user_success(
+        self, 
+        client: AsyncClient,
+        mock_user_service
+    ):
+        """Test successful user creation with valid data."""
+        user_data = {
+            "email": "test@example.com",
+            "name": "Test User"
+        }
+        
+        response = await client.post(
+            "/api/v1/users",
+            json=user_data,
+            headers={"X-API-Key": "test-key"}
+        )
+        
+        assert response.status_code == 201
+        data = response.json()
+        assert data["message"] == "User created successfully"
+        assert data["data"]["email"] == user_data["email"]
+        
+    async def test_get_user_not_found(
+        self,
+        client: AsyncClient,
+        mock_user_service
+    ):
+        """Test 404 response when user doesn't exist."""
+        mock_user_service.get_user.return_value = None
+        
+        response = await client.get(
+            "/api/v1/users/123e4567-e89b-12d3-a456-426614174000"
+        )
+        
+        assert response.status_code == 404
+        data = response.json()
+        assert data["errors"][0]["code"] == "USER_NOT_FOUND"
+
+# Factory example
+class UserFactory(factory.Factory):
+    class Meta:
+        model = User
+    
+    id = factory.Faker("uuid4")
+    email = factory.Faker("email")
+    name = factory.Faker("name")
+    created_at = factory.Faker("date_time")
+</example>
+
+<example type="invalid">
+# Invalid: Synchronous test for async code without proper structure
+def test_user():  # Wrong: Not using async
+    user = User(email="test@test.com")  # Wrong: Not using factory
+    assert user.email == "test@test.com"  # Wrong: Trivial test
+    
+# Invalid: No mocking of external dependencies
+async def test_create_user():
+    # Wrong: Actually hitting the database
+    user = await create_user_in_db({"email": "test@test.com"})
+    assert user is not None  # Wrong: Weak assertion
+</example>

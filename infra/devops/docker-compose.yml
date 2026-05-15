@@ -1,0 +1,64 @@
+services:
+  fastapi-template:
+    image: fastapi-template-${APP_ENV}
+    container_name: fastapi-template-server-${APP_ENV}
+    pull_policy: never
+    build:
+      context: ${BACKEND_BASE_PATH:-../../}
+      dockerfile: infra/devops/${APP_ENV}/Dockerfile
+    restart: always
+    env_file:
+      - ${BACKEND_BASE_PATH:-../../}/.env
+    volumes:
+      - ${BACKEND_BASE_PATH:-../../}:/app
+    networks:
+      - fastapi-template-network
+    ports:
+      - "${PORT:-5000}:${PORT:-5000}"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "${HEALTH_CHECK_URL}"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    deploy:
+      resources:
+        limits:
+          cpus: "${CPU_LIMIT}"
+          memory: ${MEMORY_LIMIT}
+  postgres:
+    image: ${POSTGRES_IMAGE:-pgvector/pgvector:pg17}
+    container_name: fastapi-template-postgres-${APP_ENV}
+    restart: always
+    ports:
+      - ${POSTGRES_DATABASE_PORT:-5432}:5432
+    environment:
+      POSTGRES_USER: ${POSTGRES_DATABASE_USERNAME}
+      POSTGRES_PASSWORD: ${POSTGRES_DATABASE_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DATABASE_NAME}
+    volumes:
+      - ${POSTGRES_CONTAINER_VOLUME_NAME:-fastapi-template-postgres-data}:/var/lib/postgresql/data
+    networks:
+      - fastapi-template-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_DATABASE_USERNAME} -d ${POSTGRES_DATABASE_NAME}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+    deploy:
+      resources:
+        limits:
+          cpus: "${DB_CPU_LIMIT:-1.00}"
+          memory: ${DB_MEMORY_LIMIT:-2G}
+
+volumes:
+  fastapi-template-postgres-data:
+    name: ${POSTGRES_CONTAINER_VOLUME_NAME:-fastapi-template-postgres-data}
+networks:
+  fastapi-template-network:
+    name: ${NETWORK_NAME:-fastapi-template-network-${APP_ENV}}
+    driver: bridge

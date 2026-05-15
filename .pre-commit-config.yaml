@@ -1,0 +1,121 @@
+# See https://pre-commit.com for more information
+# See https://pre-commit.com/hooks.html for more hooks
+
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: check-toml # Check TOML files
+      - id: check-yaml # Check YAML files
+        args:
+          - --unsafe
+      - id: check-docstring-first # Check docstring presence
+      - id: detect-aws-credentials # Detect AWS credentials in files
+        args: [--allow-missing-credentials]
+      - id: end-of-file-fixer # Ensure files end with a newline
+        exclude: | # update this if you change the database migrations and data migrations paths
+          (?x)^(
+              libs/database/migrations/.*
+              libs/database/data_migrations/.*
+          )$
+      - id: trailing-whitespace # Trailing whitespace checker
+        exclude: ^libs/database/migrations/.* ^libs/database/data_migrations/.* # update this if you change the database migrations and data migrations paths
+      - id: check-json # Check JSON syntax
+      - id: check-xml # Check XML syntax (only checks syntax, not validity)
+      - id: mixed-line-ending # Check for mixed line endings
+      - id: no-commit-to-branch
+        args: [--branch, main, --branch, develop, --branch, release/*] # Prevents commits to main and develop and release branches
+
+  # Linting for all files with pylint
+  - repo: local
+    hooks:
+      - id: pylint
+        name: pylint
+        entry: uv run pylint
+        language: system
+        types: [python]
+        exclude: ^(tests/.*|\.rc/vulture_allowlist\.py|libs/database/migrations/.*)$ # Match ruff exclusions
+        args: ["-rn", "--rcfile=.rc/.pylintrc"]
+
+  # Formatting all non-python files with prettier
+  - repo: https://github.com/pre-commit/mirrors-prettier
+    rev: "v4.0.0-alpha.8"
+    hooks:
+      - id: prettier
+        files: ".(json|md|yaml|yml|html|js)$"
+        args: [--prose-wrap=always, --print-width=120]
+
+  # Python type checker
+  - repo: local
+    hooks:
+      - id: mypy
+        name: mypy
+        entry: uv run mypy
+        language: system
+        types: [python]
+        require_serial: true
+        exclude: ^(tests/.*|\.rc/vulture_allowlist\.py|main\.py|app/config/settings\.py|infra/server/gunicorn\.py)$
+        args: ["--config-file", ".rc/mypy.ini"]
+
+  # Python AST-based static analyzer from OpenStack Security Group.
+  # - repo: https://github.com/PyCQA/bandit
+  #   rev: 1.8.6
+  #   hooks:
+  #     - id: bandit
+  #       args:
+  #         - -r
+  #         - -lll
+  #         - --config=pyproject.toml
+  #       additional_dependencies:
+  #         - tomli
+
+  # Add a trailer into a commit message indicating the hook has been executed.
+  - repo: https://gitlab.com/adam-moss/pre-commit-trailer
+    rev: v1.1.0
+    hooks:
+      - id: add-pre-commit-config-trailer # Add a pre-commit config trailer to files
+      - id: add-pre-commit-user-skipped-trailer # Add a pre-commit user skipped trailer to files
+
+  # Find dead code in Python code
+  - repo: https://github.com/jendrikseipp/vulture
+    rev: "v2.14"
+    hooks:
+      - id: vulture
+        pass_filenames: false
+        args:
+          - "libs"
+          - "app/middlewares"
+          - "app/utils"
+          - "app/config"
+          - "--min-confidence=80"
+          - "--exclude=*/__pycache__/*,libs/database/migrations/*"
+
+  # Formatting and Linting for all files with ruff
+  - repo: local
+    hooks:
+      - id: ruff-check
+        name: ruff check
+        entry: uv run ruff check
+        language: system
+        types: [python]
+        args: [--config, .rc/ruff.toml, --fix, --exit-non-zero-on-fix]
+      - id: ruff-format
+        name: ruff format
+        entry: uv run ruff format
+        language: system
+        types: [python]
+        args: [--config, .rc/ruff.toml]
+
+  # Import linter for Python
+  - repo: local
+    hooks:
+      - id: import-linter
+        name: import-linter
+        entry: uv run lint-imports
+        language: system
+        types: [python]
+        pass_filenames: false
+        stages: [pre-commit]
+        args: ["--config", ".rc/.importlinter"]
+        # Run import-linter only when Python files change
+        files: '\.py$'

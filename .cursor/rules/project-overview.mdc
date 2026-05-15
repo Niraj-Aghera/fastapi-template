@@ -1,0 +1,58 @@
+---
+description: Overview of FastApi Template structure and technology stack
+globs: ["**/*"]
+alwaysApply: true
+---
+
+# Project Overview and Technology Stack
+
+## Context
+- This rule provides foundational information about the FastApi Template
+- Should be considered for all code generation and modifications
+- Essential for understanding the project's architecture and dependencies
+
+## Requirements
+- Use FastAPI as the web framework
+- Python version must be 3.13 or higher
+- Use PostgreSQL with asyncpg driver for database operations
+- SQLAlchemy 2.0+ with async support for ORM
+- UV as the package manager (NOT pip or poetry)
+- Uvicorn for local development, Gunicorn for dev/prod environments
+- Follow the established directory structure without deviation
+
+## Directory Structure
+```
+app/
+├── api/               # API routes and endpoints
+│   ├── health/       # Health check endpoints
+│   └── v1/           # API version 1
+├── config/           # Configuration and settings
+├── exceptions/       # Custom exception classes
+├── middlewares/      # FastAPI middlewares
+├── models/           # SQLAlchemy ORM models
+├── repositories/     # Data access layer
+├── schema/           # Pydantic schemas and API response models
+├── services/         # Business logic layer
+└── utils/            # Utility functions and constants
+
+libs/
+├── database/         # Database configuration and migrations
+│   └── migrations/   # Alembic migrations
+└── logger/           # Custom logging configuration
+
+tests/
+├── factories/        # Test factories using factory-boy
+└── helpers/          # Test utilities
+```
+
+## Examples
+<example>
+# Good: Using the correct import structure
+from app.models.base_model import Base, UUIDMixin
+from app.schema.api_response import create_response
+</example>
+
+<example type="invalid">
+# Invalid: Using pip instead of UV
+pip install fastapi  # Wrong - use: uv add fastapi
+</example>

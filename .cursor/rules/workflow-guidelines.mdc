@@ -1,0 +1,108 @@
+---
+description: Development workflow, commands, and best practices
+globs: ["**/*"]
+alwaysApply: true
+---
+
+# Development Workflow Guidelines
+
+## Context
+- Defines the standard development workflow
+- Provides command references for common tasks
+- Ensures consistent development practices
+
+## Requirements
+- Use UV for all package management (never pip or poetry)
+- Run all commands through Makefile when available
+- Follow feature branch workflow (branch from develop)
+- Write tests before or alongside new features
+- Run linters before committing code
+- Update documentation for new features
+- Use semantic commit messages
+- Ensure all tests pass before pushing
+
+## Common Commands
+```bash
+# Environment Setup
+make setup           # Initial project setup
+make python          # Install Python with UV
+
+# Development
+make run            # Run locally with Uvicorn
+make run-dev        # Run with Gunicorn (dev)
+make run-prod       # Run with Gunicorn (prod)
+
+# Testing
+make test           # Run all tests
+make test-cov       # Run tests with coverage
+
+# Code Quality
+make lint           # Run pre-commit hooks
+make clean-cache    # Clean Python cache
+
+# Docker
+make build          # Build Docker image
+make up             # Start containers
+make down           # Stop containers
+make logs           # View container logs
+
+# Database
+uv run alembic upgrade head        # Apply migrations
+uv run alembic revision -m "msg"   # Create migration
+```
+
+## Examples
+<example>
+# Good: Complete feature workflow
+# 1. Create feature branch
+git checkout develop
+git pull origin develop
+git checkout -b feature/add-user-roles
+
+# 2. Install dependencies if needed
+uv add some-package
+
+# 3. Create database migration
+uv run alembic revision -m "add roles to users table"
+
+# 4. Implement feature with tests
+# - Create/update models
+# - Add repository methods
+# - Implement service logic
+# - Add API endpoints
+# - Write comprehensive tests
+
+# 5. Run tests and linters
+make test
+make lint
+
+# 6. Commit with semantic message
+git add .
+git commit -m "feat: add user roles management
+
+- Add roles column to users table
+- Implement role-based access control
+- Add endpoints for role management
+- Include comprehensive test coverage"
+
+# 7. Push and create PR
+git push origin feature/add-user-roles
+</example>
+
+<example type="invalid">
+# Invalid: Poor workflow practices
+# Wrong: Using pip instead of uv
+pip install fastapi
+
+# Wrong: Committing directly to main
+git checkout main
+git add .
+git commit -m "fixed stuff"  # Wrong: Non-descriptive message
+
+# Wrong: No testing
+git push origin main  # Wrong: Pushing without tests
+
+# Wrong: Not using Makefile commands
+python main.py  # Wrong: Use 'make run' instead
+docker-compose up  # Wrong: Use 'make up' instead
+</example>

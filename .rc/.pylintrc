@@ -1,0 +1,65 @@
+[MAIN]
+
+# Python code to check, use the filename or directory.
+# (default: None)
+source = app
+
+# Add files or directories to the blacklist. They should be base names, not paths.
+init-hook="import sys; import os; sys.path.append(os.path.abspath('.'));"
+
+# List of plugins to load, separated by commas.
+load-plugins=pylint.extensions.docparams,pylint.extensions.typing
+
+# Paths to ignore (matching ruff exclusions)
+ignore-paths=libs/database/migrations,
+             tests,
+             .rc/vulture_allowlist.py
+
+[MESSAGES CONTROL]
+# Disable the following message types to match ruff ignore list
+disable=broad-exception-caught,
+        too-few-public-methods,
+        # Docstring rules - matching ruff ignore list (D100, D101, D103, D104, D200, D205, D107, D212)
+        missing-module-docstring,      # C0114 (matches ruff D100, D104)
+        missing-class-docstring,       # C0115 (matches ruff D101)
+        missing-function-docstring,    # C0116 (matches ruff D103, D107)
+        # Style rules that ruff handles better
+        line-too-long,                 # C0301 (matches ruff E501)
+        # Import organization (ruff handles this)
+        wrong-import-position,         # C0413
+        # Other style issues ruff handles
+        trailing-newlines,             # C0305
+        trailing-whitespace,           # C0303
+        # Naming conventions (less critical, ruff has some coverage)
+        invalid-name,                  # C0103
+        # Return/else patterns ruff handles better
+        no-else-return,                # R1705
+        # Other less critical issues
+        unnecessary-pass,              # W0107
+        # Type-related issues that mypy handles better
+        unnecessary-default-type-args, # R6007
+        # SQLAlchemy-related false positives
+        not-callable,                  # E1102 (SQLAlchemy func.now() is callable)
+        # Variable initialization false positives
+        possibly-used-before-assignment, # E0606 (global scope initialization)
+
+# Only display messages, don't show the summary report.
+reports=no
+
+# Enable all messages by default. You can also disable specific ones.
+# enable=all
+
+[FORMAT]
+# Maximum number of characters on a single line.
+max-line-length=140
+
+# Output format for messages.
+output-format=colorized
+
+[DESIGN]
+# Maximum number of arguments for function/method
+max-args=6
+# Maximum number of positional arguments for function/method
+max-positional-arguments=6
+# Maximum number of local variables for function/method
+max-locals=20

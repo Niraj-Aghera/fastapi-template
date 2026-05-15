@@ -1,0 +1,68 @@
+---
+description: SQLAlchemy model patterns and database operation conventions
+globs: ["app/models/**/*.py", "app/repositories/**/*.py", "libs/database/**/*.py"]
+alwaysApply: false
+---
+
+# Database Models and Operations
+
+## Context
+- Applies to all SQLAlchemy models and database operations
+- Ensures consistent async database patterns
+- Follows repository pattern for data access
+
+## Requirements
+- All models must inherit from Base class
+- Use appropriate mixins: UUIDMixin, BigIntMixin, TimestampMixin
+- Always use async sessions for database operations
+- Implement repository pattern for data access
+- Use Mapped[] type annotations for all columns
+- Handle transactions properly with async context managers
+- Use Alembic for all database migrations
+- Never access database directly from routes
+
+## Examples
+<example>
+# Good: Proper model with mixins and repository pattern
+from sqlalchemy import String
+from sqlalchemy.orm import Mapped, mapped_column
+from app.models.base_model import Base, UUIDMixin, TimestampMixin
+
+class User(Base, UUIDMixin, TimestampMixin):
+    __tablename__ = "users"
+    
+    email: Mapped[str] = mapped_column(String(255), unique=True, index=True)
+    name: Mapped[str] = mapped_column(String(255))
+    is_active: Mapped[bool] = mapped_column(default=True)
+
+# Repository implementation
+class UserRepository:
+    def __init__(self, session: AsyncSession):
+        self.session = session
+    
+    async def create(self, user_data: dict[str, Any]) -> User:
+        user = User(**user_data)
+        self.session.add(user)
+        await self.session.commit()
+        await self.session.refresh(user)
+        return user
+    
+    async def get_by_email(self, email: str) -> User | None:
+        result = await self.session.execute(
+            select(User).where(User.email == email)
+        )
+        return result.scalar_one_or_none()
+</example>
+
+<example type="invalid">
+# Invalid: Synchronous operations without proper typing
+class User(Base):
+    __tablename__ = "users"
+    
+    id = Column(Integer, primary_key=True)  # Wrong: Not using Mapped[]
+    email = Column(String)  # Wrong: No length specified
+    
+    @classmethod
+    def get_by_email(cls, email):  # Wrong: Synchronous, no repository
+        return session.query(cls).filter_by(email=email).first()
+</example>

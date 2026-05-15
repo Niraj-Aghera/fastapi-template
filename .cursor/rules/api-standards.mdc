@@ -1,0 +1,85 @@
+---
+description: API response standards and HTTP conventions
+globs: ["app/api/**/*.py", "app/schema/**/*.py"]
+alwaysApply: false
+---
+
+# API Response Standards
+
+## Context
+- Defines standardized API response formats
+- Ensures consistent HTTP status code usage
+- Applies to all API endpoints
+
+## Requirements
+- All responses must use the standardized format via create_response()
+- Include message, data (optional), errors (optional), and meta (optional) fields
+- Use appropriate HTTP status codes: 200 (GET/PUT/PATCH), 201 (POST), 204 (DELETE), 4xx for client errors, 5xx for server errors
+- Implement pagination for list endpoints returning multiple items
+- Use Pydantic schemas for all request/response validation
+- Include proper OpenAPI documentation
+- Support API key authentication via X-API-Key header when enabled
+
+## Response Format
+```json
+{
+    "message": "Human-readable message",
+    "data": {},     // Optional: Response payload
+    "errors": [],   // Optional: List of error objects
+    "meta": {}      // Optional: Metadata (pagination, etc.)
+}
+```
+
+## Examples
+<example>
+# Good: Standardized response with proper status codes
+from fastapi import status
+from app.schema.api_response import create_response
+from app.schema.user import UserListResponse, PaginationMeta
+
+@router.get("/users")
+async def list_users(
+    page: int = Query(1, ge=1),
+    per_page: int = Query(20, ge=1, le=100)
+) -> JSONResponse:
+    users, total = await user_service.list_users(page, per_page)
+    
+    return create_response(
+        status_code=status.HTTP_200_OK,
+        message="Users retrieved successfully",
+        data=[user.model_dump() for user in users],
+        meta={
+            "pagination": {
+                "page": page,
+                "per_page": per_page,
+                "total": total,
+                "pages": (total + per_page - 1) // per_page
+            }
+        }
+    )
+
+@router.post("/users", status_code=status.HTTP_201_CREATED)
+async def create_user(user_data: UserCreateRequest) -> JSONResponse:
+    user = await user_service.create_user(user_data)
+    return create_response(
+        status_code=status.HTTP_201_CREATED,
+        message="User created successfully",
+        data=user.model_dump()
+    )
+</example>
+
+<example type="invalid">
+# Invalid: Non-standard response format
+@router.get("/users")
+async def list_users():
+    users = await get_all_users()
+    return {
+        "users": users,  # Wrong: Not using standardized format
+        "count": len(users)
+    }
+
+@router.post("/users")
+async def create_user(user: dict):  # Wrong: Not using Pydantic schema
+    # Missing status code specification
+    return {"id": 123}  # Wrong: Not using create_response
+</example>

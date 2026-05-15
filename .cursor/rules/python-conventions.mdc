@@ -1,0 +1,49 @@
+---
+description: Python coding standards and conventions for the project
+globs: ["**/*.py"]
+alwaysApply: true
+---
+
+# Python Coding Conventions
+
+## Context
+- Applies to all Python files in the project
+- Ensures consistent code style across the codebase
+- Leverages Python 3.13+ features
+
+## Requirements
+- Use Python 3.13+ features and type hints extensively
+- Follow PEP 8 with 120 character line length limit
+- Use double quotes for strings consistently
+- All functions and methods must have docstrings
+- Prefer built-in types (dict[str, Any] over Dict[str, Any])
+- Use | for union types instead of Union (e.g., str | None)
+- Group imports: standard library, third-party, local (separated by blank lines)
+- Use absolute imports for app modules
+- One import per line
+
+## Examples
+<example>
+# Good: Proper type hints and docstring
+async def get_user(user_id: UUID) -> User | None:
+    """
+    Retrieve a user by their ID.
+    
+    Args:
+        user_id: The UUID of the user to retrieve
+        
+    Returns:
+        User object if found, None otherwise
+    """
+    async with get_session() as session:
+        return await session.get(User, user_id)
+</example>
+
+<example type="invalid">
+# Invalid: Missing type hints and using old-style Union
+from typing import Union
+
+def get_user(user_id):
+    # No docstring
+    return session.get(User, user_id)
+</example>
